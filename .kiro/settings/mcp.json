@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "disabled": false
+    },
+    "langfuse-docs": {
+      "url": "https://langfuse.com/api/mcp",
+      "disabled": false
+    }
+  }
+}
