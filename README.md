@@ -328,28 +328,3 @@ are automatically traced:
 Set `LANGFUSE_ENABLED=false` to run without Langfuse (e.g. purely local dev).
 
 ---
-
-## Known limitations and deployment notes
-
-1. **Authentication**: The current `X-API-Key` header is a single shared key (Option B).
-   For multi-user production deployments, replace with OAuth2/JWT and add a `user_id`
-   foreign key to the `documents` table.
-
-2. **Legacy `.ppt` files**: python-pptx does not support the legacy binary format.
-   Convert to `.pptx` using Microsoft PowerPoint or LibreOffice before uploading.
-
-3. **PGVector sync driver**: `langchain-postgres` uses a synchronous psycopg3 connection
-   for vector store operations. These are wrapped in `asyncio.get_event_loop().run_in_executor`
-   to avoid blocking the async event loop.
-
-4. **Production hardening**: Before production deployment:
-   - Set `APP_ENV=production` (disables CORS wildcard, disables SQL echo)
-   - Run Alembic migrations rather than relying on `create_tables()` at startup
-   - Configure a secrets manager for `GOOGLE_API_KEY` and `POSTGRES_PASSWORD`
-   - Set resource limits on Docker containers
-   - Configure TLS termination in front of the API
-
-5. **Gemini model names**: Model identifiers change over time. The configured default
-   (`gemini-2.0-flash`) was verified against LangChain documentation in October 2026.
-   Check [ai.google.dev](https://ai.google.dev/gemini-api/docs/models) if you encounter
-   `404 model not found` errors and update `GEMINI_LLM_MODEL` accordingly.
