@@ -92,7 +92,7 @@ class CsvParser(BaseParser):
             row_start = i + 2
             row_end = i + len(batch) + 1
 
-            lines = [f"Columns: {' | '.join(headers)}", ""]
+            lines = [f"Rows: {row_start}-{row_end}", f"Columns: {' | '.join(headers)}", ""]
             for row in batch:
                 # Pad short rows to match header length
                 cells = list(row) + [""] * (len(headers) - len(row))

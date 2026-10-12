@@ -91,30 +91,51 @@ class IngestionPipeline:
 
             # --- Step 2: Idempotency check ---
             existing = await doc_repo.get_by_hash(content_hash)
-            if existing and existing.status == IngestionStatus.COMPLETE:
-                logger.info(
-                    "File %r already indexed (doc_id=%s); skipping re-ingestion.",
-                    filename,
-                    existing.id,
-                )
-                span["already_indexed"] = True
-                return IngestionResult(
-                    document_id=existing.id,
-                    filename=filename,
-                    status=IngestionStatus.COMPLETE,
-                    chunk_count=len(existing.chunks) if existing.chunks else 0,
-                    already_indexed=True,
-                    message="Document already indexed. No changes detected.",
-                )
+            if existing:
+                if existing.status == IngestionStatus.COMPLETE:
+                    logger.info(
+                        "File %r already indexed (doc_id=%s); skipping re-ingestion.",
+                        filename,
+                        existing.id,
+                    )
+                    span["already_indexed"] = True
+                    chunk_count = await doc_repo.get_chunk_count(existing.id)
+                    return IngestionResult(
+                        document_id=existing.id,
+                        filename=filename,
+                        status=IngestionStatus.COMPLETE,
+                        chunk_count=chunk_count,
+                        already_indexed=True,
+                        message="Document already indexed. No changes detected.",
+                    )
+                else:
+                    # Document exists but failed or is in processing state — clean up and re-ingest
+                    logger.warning(
+                        "File %r previously failed or incomplete (doc_id=%s, status=%s); re-ingesting.",
+                        filename,
+                        existing.id,
+                        existing.status,
+                    )
+                    # Delete old chunks and vectors to avoid duplicate key violations
+                    await doc_repo.delete_chunks_for_document(existing.id)
+                    # Delete vectors in thread pool (PGVector is sync)
+                    import asyncio  # noqa: PLC0415
 
-            # --- Step 3: Create document record ---
-            doc = await doc_repo.create(
-                filename=filename,
-                file_type=ext,
-                content_hash=content_hash,
-                file_size_bytes=len(data),
-            )
-            await doc_repo.update_status(doc.id, IngestionStatus.PROCESSING)
+                    await asyncio.get_event_loop().run_in_executor(
+                        None,
+                        lambda: self._vector_repo.delete_by_document_id(existing.id),
+                    )
+                    doc = existing
+                    await doc_repo.update_status(doc.id, IngestionStatus.PROCESSING)
+            else:
+                # --- Step 3: Create new document record ---
+                doc = await doc_repo.create(
+                    filename=filename,
+                    file_type=ext,
+                    content_hash=content_hash,
+                    file_size_bytes=len(data),
+                )
+                await doc_repo.update_status(doc.id, IngestionStatus.PROCESSING)
 
             try:
                 # --- Step 4: Parse ---

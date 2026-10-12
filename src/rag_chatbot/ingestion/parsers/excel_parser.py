@@ -136,7 +136,12 @@ class ExcelParser(BaseParser):
             row_start = i + 2
             row_end = i + len(batch) + 1
 
-            lines = [f"Sheet: {sheet_name}", f"Columns: {' | '.join(headers)}", ""]
+            lines = [
+                f"Sheet: {sheet_name}",
+                f"Rows: {row_start}-{row_end}",
+                f"Columns: {' | '.join(headers)}",
+                "",
+            ]
             for row in batch:
                 cells = [str(c) if c is not None else "" for c in row]
                 lines.append(" | ".join(cells))

@@ -95,6 +95,16 @@ class DocumentRepository:
         except Exception as exc:
             raise PersistenceError(f"Failed to list documents: {exc}") from exc
 
+    async def get_chunk_count(self, doc_id: uuid.UUID) -> int:
+        """Count the number of chunks for a specific document."""
+        try:
+            from sqlalchemy import func  # noqa: PLC0415
+
+            result = await self._session.execute(select(func.count(Chunk.id)).where(Chunk.document_id == doc_id))
+            return result.scalar_one()
+        except Exception as exc:
+            raise PersistenceError(f"Failed to count chunks: {exc}") from exc
+
     # ------------------------------------------------------------------
     # Chunk operations
     # ------------------------------------------------------------------

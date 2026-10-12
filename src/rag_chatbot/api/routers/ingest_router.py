@@ -116,16 +116,18 @@ async def list_documents(
     doc_repo = DocumentRepository(session)
     docs = await doc_repo.list_all()
 
-    summaries = [
-        DocumentSummary(
-            document_id=doc.id,
-            filename=doc.filename,
-            file_type=doc.file_type,
-            status=IngestionStatus(doc.status),
-            chunk_count=len(doc.chunks) if doc.chunks else 0,
-            created_at=doc.created_at.isoformat(),
+    summaries = []
+    for doc in docs:
+        chunk_count = await doc_repo.get_chunk_count(doc.id)
+        summaries.append(
+            DocumentSummary(
+                document_id=doc.id,
+                filename=doc.filename,
+                file_type=doc.file_type,
+                status=IngestionStatus(doc.status),
+                chunk_count=chunk_count,
+                created_at=doc.created_at.isoformat(),
+            )
         )
-        for doc in docs
-    ]
 
     return DocumentListResponse(documents=summaries, total=len(summaries))

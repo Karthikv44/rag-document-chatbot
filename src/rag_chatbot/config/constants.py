@@ -55,8 +55,8 @@ class IngestionStatus(StrEnum):
 # =============================================================================
 
 # Maximum characters per text chunk for non-tabular content
-DEFAULT_CHUNK_SIZE: int = 1000
-DEFAULT_CHUNK_OVERLAP: int = 100
+DEFAULT_CHUNK_SIZE: int = 600
+DEFAULT_CHUNK_OVERLAP: int = 60
 
 # Maximum rows per table chunk (preserves header context per chunk)
 DEFAULT_TABLE_CHUNK_ROWS: int = 30

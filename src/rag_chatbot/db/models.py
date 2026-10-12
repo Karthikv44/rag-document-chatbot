@@ -55,7 +55,7 @@ class Document(Base):
         "Chunk",
         back_populates="document",
         cascade="all, delete-orphan",
-        lazy="select",
+        lazy="raise",  # Prevent accidental lazy loading in async contexts
     )
 
     def __repr__(self) -> str:
@@ -96,7 +96,11 @@ class Chunk(Base):
     )
 
     # Relationship
-    document: Mapped["Document"] = relationship("Document", back_populates="chunks")
+    document: Mapped["Document"] = relationship(
+        "Document",
+        back_populates="chunks",
+        lazy="raise",  # Prevent accidental lazy loading in async contexts
+    )
 
     def __repr__(self) -> str:
         return f"<Chunk id={self.id} document_id={self.document_id} index={self.chunk_index}>"
