@@ -177,8 +177,7 @@ All endpoints require the `X-API-Key` header.
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/ingest \
-  -H "X-API-Key: your-api-key" \
-  -F "files=@sales_q1.xlsx" \
+  -H "X-API-Key: 1234" \
   -F "files=@customer_sales.csv" \
   -F "files=@q1_business_review.pptx"
 ```
@@ -187,8 +186,7 @@ curl -X POST http://localhost:8000/api/v1/ingest \
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/chat \
-  -H "X-API-Key: your-api-key" \
-  -H "Content-Type: application/json" \
+  -H "X-API-Key: 1234" \
   -d '{"question": "What was the South region revenue in Q1?", "top_k": 5}'
 ```
 
@@ -196,7 +194,7 @@ curl -X POST http://localhost:8000/api/v1/chat \
 
 ```bash
 curl http://localhost:8000/api/v1/ingest/documents \
-  -H "X-API-Key: your-api-key"
+  -H "X-API-Key: 1234"
 ```
 
 ### Health and readiness
